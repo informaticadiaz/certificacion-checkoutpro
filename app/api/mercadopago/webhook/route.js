@@ -1,23 +1,31 @@
 import { NextResponse } from 'next/server';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
+
 // Inicializa el cliente de Mercado Pago
 const client = new MercadoPagoConfig({ 
   accessToken: process.env.MP_ACCESS_TOKEN 
 });
+
 export async function POST(request) {
   try {
-    const body = await request.formData();
+    // Cambio aquí: usar json() en lugar de formData()
+    const body = await request.json();
+    
+    // Logs para depuración
+    console.log('Webhook received:', body);
     
     // Obtener action e ID del webhook
-    const action = body.get('action');
-    const id = body.get('data.id');
+    const action = body.action;
+    const paymentId = body.data.id;
+    
+    console.log(`Action: ${action}, Payment ID: ${paymentId}`);
     
     if (action === 'payment.created' || action === 'payment.updated') {
       // Obtener detalles del pago
       const payment = new Payment(client);
-      const paymentData = await payment.get({ id });
+      const paymentData = await payment.get({ id: paymentId });
       
-      console.log('Payment ID:', id);
+      console.log('Payment ID:', paymentId);
       console.log('Payment status:', paymentData.status);
       
       // Aquí puedes guardar el pago en tu base de datos
@@ -28,14 +36,8 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error en webhook:', error);
     return NextResponse.json(
-      { error: 'Error procesando webhook' },
+      { error: 'Error procesando webhook', message: error.message },
       { status: 500 }
     );
   }
 }
-// Configuración para permitir solicitudes de Mercado Pago
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
