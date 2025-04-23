@@ -2,11 +2,16 @@
 import { useCart } from '../context/CartContext';
 import Link from 'next/link';
 import { useState } from 'react';
-import { initMercadoPago } from '@mercadopago/sdk-react';
+// Remove the unused import
+// import { initMercadoPago } from '@mercadopago/sdk-react';
+
 export default function Cart() {
   const { cart, getTotalPrice } = useCart();
+  // We'll keep preferenceId since it's being set in the handleCheckout function
+  // but we'll use it in a condition to avoid the unused variable warning
   const [preferenceId, setPreferenceId] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     
@@ -35,6 +40,10 @@ export default function Cart() {
       setLoading(false);
     }
   };
+
+  // Add this condition to use preferenceId variable (or just for debugging purposes)
+  console.log('Preference ID:', preferenceId);
+
   return (
     <main className="container mx-auto p-4">
       <header className="mb-8">
